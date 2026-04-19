@@ -8,6 +8,8 @@
 #define PORT 8080
 #define SERVER_IP "127.0.0.1"
 
+using namespace std;
+
 int main() {
     int sock = socket(AF_INET, SOCK_STREAM, 0);
     struct sockaddr_in serverAddr;
@@ -16,18 +18,29 @@ int main() {
     inet_pton(AF_INET, SERVER_IP, &serverAddr.sin_addr);
 
     if (connect(sock, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0) {
-        std::cerr << "Connection failed" << std::endl;
+        cout << "Connection Failed. Is the server running?" << endl;
         return 1;
     }
 
-    std::string message;
-    std::cout << "Enter message: ";
-    std::getline(std::cin, message);
+    // 1. DYNAMIC LOGIN - No more recompiling!
+    string user, pass, command;
+    cout << "--- SECURE LOGIN ---" << endl;
+    cout << "Username: "; cin >> user;
+    cout << "Password: "; cin >> pass;
+    
+    cout << "\n--- COMMAND MENU ---" << endl;
+    cout << "Enter command (ls, read, copy, edit, ftp): ";
+    cin >> command;
 
-    std::string fullMessage = "rohat:1234:" + message;
-    std::string encryptedMsg = encrypt(fullMessage); 
+    // 2. Format the packet
+    string fullPacket = user + ":" + pass + ":" + command;
 
+    // 3. Encrypt and Send
+    string encryptedMsg = encrypt(fullPacket); 
     send(sock, encryptedMsg.c_str(), encryptedMsg.size(), 0);
+
+    cout << "\n[CLIENT] Encrypted packet sent to server." << endl;
+
     close(sock);
     return 0;
 }
